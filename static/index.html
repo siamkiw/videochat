@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Just Chating</title>
+  </head>
+  <body>
+    <h1>Hello Chating</h1>
+
+    <div id="container-chat"></div>
+
+    <form>
+      <input id="input-chat" type="text" />
+
+      <button id="button-chat">SEND</button>
+    </form>
+
+    <script>
+      (function () {
+        const buttonChat = document.getElementById("button-chat");
+        const inputChat = document.getElementById("input-chat");
+        const containerChat = document.getElementById("container-chat");
+
+        let conn;
+
+        const randomName = (length = 8) => {
+          // Declare all characters
+          let chars =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+          // Pick characers randomly
+          let str = "";
+          for (let i = 0; i < length; i++) {
+            str += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+
+          return str;
+        };
+
+        displayName = randomName();
+
+        function init() {
+          if (conn) {
+            conn.onerror = ws.open = ws.onclose = null;
+            conn.close();
+          }
+          conn = new WebSocket("ws://" + document.location.host + "/ws", [
+            "json",
+            "xml",
+          ]);
+
+          conn.onopen = () => {
+            console.log("Connection opened");
+          };
+
+          conn.onmessage = ({ data }) => {
+            onGetMessage(data);
+          };
+
+          conn.onclose = function () {
+            conn = null;
+          };
+        }
+
+        buttonChat.onclick = function onSendMessage(event) {
+          event.preventDefault();
+          if (inputChat.value === "") return;
+          console.log("inputChat.value : ", inputChat.value);
+          conn.send(inputChat.value);
+          // conn.send("hello");
+        };
+
+        function onGetMessage(message) {
+          res = JSON.parse(message);
+          console.log("res : ", res);
+          containerChat.innerHTML += `<p>${res.ip} : ${res.received_message}</p>`;
+          containerChat.scrollTop = containerChat.scrollHeight;
+        }
+
+        init();
+      })();
+    </script>
+
+    <style>
+      h1 {
+        color: bisque;
+      }
+
+      p {
+        color: blanchedalmond;
+        margin-left: 10px;
+      }
+
+      body {
+        background-color: darkcyan;
+      }
+
+      #container-chat {
+        height: 500px;
+        width: 500px;
+        overflow-y: auto;
+        background-color: darkslategray;
+        margin-bottom: 20px;
+      }
+    </style>
+  </body>
+</html>
